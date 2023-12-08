@@ -38,10 +38,12 @@
 #include <fstream>
 #include <ompl/geometric/SimpleSetup.h>
 #include <ompl/control/SimpleSetup.h>
+#include <ompl/base/State.h>
 
 namespace fs = std::filesystem;
 namespace og = ompl::geometric;
 namespace oc = ompl::control;
+namespace ob = ompl::base;
 
 
 // generate date/time information to solutions or solution directories
@@ -84,5 +86,11 @@ void write2sys(const oc::SimpleSetupPtr problem, const std::vector<Agent*> agent
     auto filePath = fs::current_path() / sol_dir / fs::path(fileName); /// appendTimeToFileName(fileName); // e.g. MyPrettyFile_2018-06-09_01-42-00.txt
     std::ofstream file(filePath);
     const oc::PathControl p = problem->getSolutionPath();
-    p.printAsMatrix(file);
+    // p.printAsMatrix(file);
+    p.asGeometric().printAsMatrix(std::cout);
+    std::cout << p.getStateCount() << " < State Count\n";
+    // std::cout << p.interpolate().getStateCount() << " < State Count\n";
+    std::cout << p.asGeometric().getStateCount() << " < State Count\n";
+    std::vector< ob::State*> states = p.asGeometric().getStates();
+    
 }

@@ -81,18 +81,18 @@ void planControl(std::string planner_string)
     ss->setup();
 
     // pause for questions
-    std::cout << "Setup Complete. Press ENTER to plan: ";
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    // std::cout << "Setup Complete. Press ENTER to plan: ";
+    // std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     
     // solve the instance
-    bool solved = ss->solve(30.0);
+    bool solved = ss->solve(10.0);
     if (solved)
         write2sys(ss, w->getAgents());
 }
 
 int main(int argc, char ** argv)
 {
-    std::string plannerName = "RRT";
+    std::string plannerName = "SST";
     OMPL_INFORM("Planning for OMPL Lecture Example using Control Planning with %s", plannerName.c_str());
     planControl(plannerName);
 }
