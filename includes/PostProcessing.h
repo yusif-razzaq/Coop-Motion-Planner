@@ -79,15 +79,14 @@ void write2sys(const og::SimpleSetupPtr problem, const std::vector<Agent*> agent
 // write solultion to the system
 void write2sys(const oc::SimpleSetupPtr problem, const std::vector<Agent*> agents)
 {
-    fs::path sol_dir = "solutions/" + GetCurrentTimeForFileName();
-    fs::create_directories(sol_dir);
+    fs::path sol_dir = "solutions/";
+    std::string fileName = agents[0]->getDynamics() + "_plan.txt";
 
-    std::string fileName = agents[0]->getName() + ".txt";
-    auto filePath = fs::current_path() / sol_dir / fs::path(fileName); /// appendTimeToFileName(fileName); // e.g. MyPrettyFile_2018-06-09_01-42-00.txt
+    auto filePath = fs::current_path() / sol_dir / fs::path(fileName); 
     std::ofstream file(filePath);
     const oc::PathControl p = problem->getSolutionPath();
-    // p.printAsMatrix(file);
-    p.asGeometric().printAsMatrix(std::cout);
+    p.asGeometric().printAsMatrix(file);
+    p.printAsMatrix(std::cout);
     std::cout << p.getStateCount() << " < State Count\n";
     // std::cout << p.interpolate().getStateCount() << " < State Count\n";
     std::cout << p.asGeometric().getStateCount() << " < State Count\n";

@@ -40,14 +40,25 @@
 namespace ob = ompl::base;
 namespace oc = ompl::control;
 
-oc::ControlSpacePtr createUniform2DRealVectorControlSpace(ob::StateSpacePtr &space)
-{
+oc::ControlSpacePtr createUniform2DRealVectorControlSpace(ob::StateSpacePtr &space) {
     auto cspace(std::make_shared<oc::RealVectorControlSpace>(space, 2));
     
     // set the bounds for the control space
     ob::RealVectorBounds cbounds(2);
     cbounds.setLow(-1);
     cbounds.setHigh(1);
+    cspace->setBounds(cbounds);
+
+    return cspace;
+}
+
+oc::ControlSpacePtr createUniform2DUAVControlSpace(ob::StateSpacePtr &space) {
+    auto cspace(std::make_shared<oc::RealVectorControlSpace>(space, 2));
+    
+    // set the bounds for the control space
+    ob::RealVectorBounds cbounds(2);
+    cbounds.setLow(-1.0);
+    cbounds.setHigh(1.0);
     cspace->setBounds(cbounds);
 
     return cspace;

@@ -46,8 +46,7 @@
 namespace ob = ompl::base;
 namespace oc = ompl::control;
 
-void SecondOrderCarODE (const oc::ODESolver::StateType& q, const oc::Control* control, oc::ODESolver::StateType& qdot)
-{
+void SecondOrderCarODE (const oc::ODESolver::StateType& q, const oc::Control* control, oc::ODESolver::StateType& qdot) {
     // q = x, y, v, phi, theta
     // c = a, phidot
     const double *u = control->as<oc::RealVectorControlSpace::ControlType>()->values;
@@ -68,12 +67,39 @@ void SecondOrderCarODE (const oc::ODESolver::StateType& q, const oc::Control* co
     qdot[4] = (v / carLength) * tan(phi);
 }
 
+void SecondOrderUAVODE (const oc::ODESolver::StateType& q, const oc::Control* control, oc::ODESolver::StateType& qdot) {
+    // q = x, y, x., y., phi, theta, phi., theta.
+    // u = U2, U3
+    const double *u = control->as<oc::RealVectorControlSpace::ControlType>()->values;
+    // state params
+    const double Ix = 1.0;
+    const double Iy = 1.0;
+    double g = 9.80665;
+
+    // Zero out qdot
+    qdot.resize (q.size (), 0);
+ 
+    // vehicle model
+    qdot[0] = q[2];
+    qdot[1] = q[3];
+    qdot[2] = -g*q[5];
+    qdot[3] = g*q[4];
+    qdot[4] = q[6];
+    qdot[5] = q[7];
+    qdot[6] = u[0]/Ix;
+    qdot[7] = u[1]/Iy;
+}
+
 // callback for putting angle [0, 2pi]
-void SecondOrderCarODEPostIntegration (const ob::State* /*state*/, const oc::Control* /*control*/, const double /*duration*/, ob::State *result)
-{
+void SecondOrderCarODEPostIntegration (const ob::State* /*state*/, const oc::Control* /*control*/, const double /*duration*/, ob::State *result) {
     // wrap the angle
     ob::CompoundState* cs = result->as<ob::CompoundState>();
     ob::SO2StateSpace::StateType* angleState1 = cs->as<ob::SO2StateSpace::StateType>(1);
     ob::SO2StateSpace SO2;
     SO2.enforceBounds(angleState1);
+}
+
+void SecondOrderUAVODEPostIntegration (const ob::State* /*state*/, const oc::Control* /*control*/, const double /*duration*/, ob::State *result) {
+    // wrap the angle
+    // std::cout << result[0];
 }
