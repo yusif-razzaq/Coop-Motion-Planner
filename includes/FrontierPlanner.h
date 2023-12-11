@@ -9,5 +9,6 @@ void postFlightFrontier(const oc::PathControl& path, World *w) {
         const auto* realState = state->as<ob::RealVectorStateSpace::StateType>();
         std::pair <std::size_t, std::size_t> centerCell = w->getCellFromPoint(realState->values[0], realState->values[1]);
         w->updateFrontier(centerCell);
+        w->showGrid();
     }
 }

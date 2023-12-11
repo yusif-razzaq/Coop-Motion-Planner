@@ -39,7 +39,7 @@
 #include <boost/geometry/geometries/geometries.hpp>
 #include <ompl/tools/config/SelfConfig.h>
 #include <yaml-cpp/yaml.h>
-
+#include <opencv2/opencv.hpp>
 
 typedef boost::geometry::model::d2::point_xy<double> point;
 typedef boost::geometry::model::polygon<point> polygon;
@@ -154,7 +154,7 @@ class World {
         };
 
         void updateFrontier(const std::pair<std::size_t, std::size_t>& centerCell) {
-            int squareSize = 10;
+            int squareSize = 20;
             for (int i = centerCell.first - squareSize / 2; i <= centerCell.first + squareSize / 2; ++i) {
                 for (int j = centerCell.second - squareSize / 2; j <= centerCell.second + squareSize / 2; ++j) {
                     // Check if the cell (i, j) is within the bounds of the grid
@@ -165,6 +165,28 @@ class World {
             }
         }
 
+        void showGrid() {
+            cv::Mat occupancyMap(rows, cols, CV_8UC3);
+
+            // Set colors for different cell states
+            cv::Scalar colorKnown(108, 108, 0);       // White for free cells
+            cv::Scalar colorUnknown(63, 63, 171);   // Gray for unknown cells
+            cv::Vec3b colorKnownVec = cv::Vec3b(colorKnown[0], colorKnown[1], colorKnown[2]);
+            cv::Vec3b colorUnknownVec = cv::Vec3b(colorUnknown[0], colorUnknown[1], colorUnknown[2]);
+            // Fill the occupancy map with corresponding colors based on cell states
+            for (int i = 0; i < occupancyMap.rows; ++i) {
+                for (int j = 0; j < occupancyMap.cols; ++j) {
+                    if (occupancyGrid[i][j].state == KNOWN) {
+                        occupancyMap.at<cv::Vec3b>(i, j) = colorKnownVec;
+                    } else {
+                        occupancyMap.at<cv::Vec3b>(i, j) = colorUnknownVec;
+                    }
+                }
+            }      
+            cv::imshow("Occupancy Grid", occupancyMap);
+            cv::waitKey(0);  // Wait for a key press to close the window 
+        }
+ 
     private:
         std::vector<double> dimensions;
         std::vector<Obstacle> Obstacles_;

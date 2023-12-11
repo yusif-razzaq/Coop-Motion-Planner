@@ -164,6 +164,6 @@ int main(int argc, char ** argv)
 {
     std::string plannerName = "RRT";
     OMPL_INFORM("Planning for OMPL Lecture Example using Control Planning with %s", plannerName.c_str());
-    planCarControl(plannerName);
+    // planCarControl(plannerName);
     planUAVControl(plannerName);
 }

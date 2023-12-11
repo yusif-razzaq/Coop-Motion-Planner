@@ -4,6 +4,7 @@ import math
 import csv
 
 if __name__ == '__main__':
+    limits = [(-1, -1), (-1, 15), (15, 15), (15, -1)]
     workspace1 = [
         "POLYGON((1.000000 1.000000,2.000000 1.000000,2.000000 5.000000,1.000000 5.000000,1.000000 1.000000))",
         "POLYGON((3.000000 3.000000,4.000000 3.000000,4.000000 12.000000,3.000000 12.000000,3.000000 3.000000))",
@@ -34,11 +35,11 @@ if __name__ == '__main__':
     plt.figure()
     ax = plt.gca() 
     ax.set_aspect('equal', adjustable='box')
-    for obstacle in obstacles:
-        patch = Polygon(obstacle, facecolor="indianred", edgecolor="black", lw=1)
-        ax.add_patch(patch)
+    plt.xlim(limits[0][0], limits[2][0])  # Set x-axis limits from 0 to 6
+    plt.ylim(limits[0][1], limits[2][1])
 
-
+    patch = Polygon(limits, facecolor="darkgrey", zorder=0, alpha=0.75)
+    ax.add_patch(patch)
     ugv_data = []
     with open('solutions/Car_plan.txt', 'r') as file:
         for line in file:
@@ -77,23 +78,43 @@ if __name__ == '__main__':
 
     half_w = 0.5 / 2
     half_l = 0.5 / 2
+    scope = 5 / 2
     x_pts = []
     y_pts = []
     for state in uav_data:
         vertices = [
-            (state[0] + half_w * math.cos(0) - half_l * math.sin(0),
-            state[1] + half_w * math.sin(0) + half_l * math.cos(0)),
+            (state[0] + half_w,
+            state[1] + half_l),
 
-            (state[0] - half_w * math.cos(0) - half_l * math.sin(0),
-            state[1] - half_w * math.sin(0) + half_l * math.cos(0)),
+            (state[0] - half_w,
+            state[1] + half_l),
 
-            (state[0] - half_w * math.cos(0) + half_l * math.sin(0),
-            state[1] - half_w * math.sin(0) - half_l * math.cos(0)),
+            (state[0] - half_w ,
+            state[1] - half_l),
 
-            (state[0] + half_w * math.cos(0) + half_l * math.sin(0),
-            state[1] + half_w * math.sin(0) - half_l * math.cos(0))
+            (state[0] + half_w ,
+            state[1] - half_l)
         ]
-        patch = Polygon(vertices, facecolor="cornflowerblue", edgecolor="black", lw=0.5)
+        patch = Polygon(vertices, facecolor="mediumpurple", edgecolor="black", lw=0.5, alpha=0.75)
         ax.add_patch(patch)
-    ax.plot(x_pts, y_pts)
+        vertices = [
+            (state[0] + scope,
+            state[1] + scope),
+
+            (state[0] - scope,
+            state[1] + scope),
+
+            (state[0] - scope,
+            state[1] - scope),
+
+            (state[0] + scope ,
+            state[1] - scope)
+        ]
+        patch = Polygon(vertices, facecolor="white", zorder=0)
+        ax.add_patch(patch)
+    
+    for obstacle in obstacles:
+        patch = Polygon(obstacle, facecolor="indianred", edgecolor="black", lw=1, zorder=0)
+        ax.add_patch(patch)
+
     plt.show()

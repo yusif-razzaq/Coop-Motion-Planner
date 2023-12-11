@@ -52,8 +52,8 @@ ob::StateSpacePtr createBounded2ndOrderCarStateSpace(const std::vector<double>& 
     bounds.setHigh(0, dimensions[1]); // x upper bound
     bounds.setLow(1, dimensions[2]);  // y lower bound
     bounds.setHigh(1, dimensions[3]); // y upper bound
-    bounds.setLow(2, -1);  // v lower bound
-    bounds.setHigh(2, 1); // v upper bound
+    bounds.setLow(2, -3);  // v lower bound
+    bounds.setHigh(2, 3); // v upper bound
     bounds.setLow(3, -M_PI / 3);  // phi lower bound
     bounds.setHigh(3, M_PI / 3); // phi upper bound
     space->as<ob::CompoundStateSpace>()->as<ob::RealVectorStateSpace>(0)->setBounds(bounds);
