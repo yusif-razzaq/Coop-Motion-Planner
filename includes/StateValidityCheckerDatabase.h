@@ -75,18 +75,22 @@ public:
         const double TR_x = cx + ((carWidth / 2) * cos(theta)) - ((carHeight / 2) * sin(theta));
         const double TR_y = cy + ((carWidth / 2) * sin(theta)) + ((carHeight / 2) * cos(theta));
         std::string top_right = std::to_string(TR_x) + " " + std::to_string(TR_y);
+        if (!w_->isGridKnown(TR_x, TR_y)) return false;
         // TOP LEFT VERTEX:
         const double TL_x = cx - ((carWidth / 2) * cos(theta)) - ((carHeight / 2) * sin(theta));
         const double TL_y = cy - ((carWidth / 2) * sin(theta)) + ((carHeight / 2) * cos(theta));
         std::string top_left = std::to_string(TL_x) + " " + std::to_string(TL_y);
+        if (!w_->isGridKnown(TL_x, TL_y)) return false;
         // BOTTOM LEFT VERTEX:
         const double BL_x = cx - ((carWidth / 2) * cos(theta)) + ((carHeight / 2) * sin(theta));
         const double BL_y = cy - ((carWidth / 2) * sin(theta)) - ((carHeight / 2) * cos(theta));
         std::string bottom_left = std::to_string(BL_x) + " " + std::to_string(BL_y);
+        if (!w_->isGridKnown(BL_x, BL_y)) return false;
         // BOTTOM RIGHT VERTEX:
         const double BR_x = cx + ((carWidth / 2) * cos(theta)) + ((carHeight / 2) * sin(theta));
         const double BR_y = cy + ((carWidth / 2) * sin(theta)) - ((carHeight / 2) * cos(theta));
         std::string bottom_right = std::to_string(BR_x) + " " + std::to_string(BR_y);
+        if (!w_->isGridKnown(BR_x, BR_y)) return false;
 
         // convert to string for easy initializataion
         std::string points = "POLYGON((" + bottom_left + "," + bottom_right + "," + top_right + "," + top_left + "," + bottom_left + "))";

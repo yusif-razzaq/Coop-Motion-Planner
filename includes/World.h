@@ -33,7 +33,7 @@
 *********************************************************************/
 
 /* Author: Justin Kottinger */
-
+#pragma once
 #include <boost/geometry/io/io.hpp>
 #include <boost/geometry/geometries/point_xy.hpp>
 #include <boost/geometry/geometries/geometries.hpp>
@@ -92,6 +92,8 @@ class Agent {
         std::vector<double> getShape() const {return shape_;};
         std::vector<double> getStartLocation() const {return start_;};
         std::vector<double> getGoalLocation() const {return goal_;};
+        void setStartLocation(const std::vector<double>& start) {start_ = start;};
+        void setGoalLocation(const std::vector<double>& goal) {goal_ = goal;};
     private:
         std::string name_;
         std::string dynamics_;
@@ -105,7 +107,7 @@ class Agent {
 // world class holds all relevent data in the world that is used by OMPL
 class World {
     public:
-        World() : occupancyGrid(100, std::vector<GridCell>(100, {UNKNOWN})){ 
+        World() : occupancyGrid(80, std::vector<GridCell>(80, {UNKNOWN})){  // 0.2 m cellWidth
             rows = occupancyGrid.size(); // Number of rows
             cols = (rows > 0) ? occupancyGrid[0].size() : 0; // Number of columns
         }
@@ -143,26 +145,37 @@ class World {
 
         std::pair<std::size_t, std::size_t> getGridSize() const {return {rows, cols};};
 
-
-        std::pair<std::size_t, std::size_t> getCellFromPoint(double x0, double x1) const {
-
-            double cellWidth0 = (dimensions[1] - dimensions[0])/rows;
-            double cellWidth1 = (dimensions[3] - dimensions[2])/cols;
-            int i = std::floor((x0 - dimensions[0]) / cellWidth0);
-            int j = std::floor((x1 - dimensions[2]) / cellWidth1);
+        std::pair<std::size_t, std::size_t> getCellFromPoint(double x, double y) const {
+            double cellWidth0 = (dimensions[1] - dimensions[0]) / rows;
+            double cellWidth1 = (dimensions[3] - dimensions[2]) / cols;
+            int i = std::floor((x - dimensions[0]) / cellWidth0);
+            int j = std::floor((y - dimensions[2]) / cellWidth1); 
             return std::pair<std::size_t, std::size_t>(i, j);
         };
 
         void updateFrontier(const std::pair<std::size_t, std::size_t>& centerCell) {
-            int squareSize = 20;
-            for (int i = centerCell.first - squareSize / 2; i <= centerCell.first + squareSize / 2; ++i) {
-                for (int j = centerCell.second - squareSize / 2; j <= centerCell.second + squareSize / 2; ++j) {
+            int squareSize = 20; // 5 m
+            int startX = centerCell.first - squareSize / 2;
+            if (startX < 0) startX = 0;
+            int startY = centerCell.second - squareSize / 2;
+            if (startY < 0) startY = 0;
+            for (int i = startX; i <= centerCell.first + squareSize / 2; ++i) {
+                for (int j = startY; j <= centerCell.second + squareSize / 2; ++j) {
                     // Check if the cell (i, j) is within the bounds of the grid
                     if (i >= 0 && i < rows && j >= 0 && j < cols) {
                         occupancyGrid[i][j].state = KNOWN;
                     }
                 }
             }
+        }
+
+        bool isGridKnown(double x, double y) const {
+            if (x < dimensions[0] || x > dimensions[1] || y < dimensions[2] || y > dimensions[3]) return false;
+            std::pair<std::size_t, std::size_t> cell = getCellFromPoint(x, y);
+            // std::cout << "checking point " << x << ", " << y << "\n";
+            // std::cout << "checking cell " << cell.first << ", " << cell.second << "\n";
+            if (occupancyGrid[cell.first][cell.second].state == KNOWN) return true;
+            else return false;
         }
 
         void showGrid() {
@@ -185,6 +198,31 @@ class World {
             }      
             cv::imshow("Occupancy Grid", occupancyMap);
             cv::waitKey(0);  // Wait for a key press to close the window 
+        }
+
+        int gridStatus(double x, double y) const {
+            if (isPointInsidePolygons(x, y)) return 2;
+            if (isGridKnown(x, y)) return 0;
+            return 1;
+        }
+
+        bool isPointInsidePolygons(double x, double y) const {
+            for (Obstacle obstacle: Obstacles_) {
+                polygon::ring_type vertices = obstacle.getPoints();
+                int numVertices = vertices.size();
+                bool inside = false;
+                for (int i = 0, j = numVertices - 1; i < numVertices; j = i++) {
+                    double vx1 = boost::geometry::get<0>(vertices[i]);
+                    double vy1 = boost::geometry::get<1>(vertices[i]);
+                    double vx2 = boost::geometry::get<0>(vertices[j]);
+                    double vy2 = boost::geometry::get<1>(vertices[j]);
+                    if ((vy1 > y) != (vy2 > y) && x < (vx2 - vx1) * (y - vy1) / (vy2 - vy1) + vx1) {
+                        inside = !inside;
+                    }
+                }
+                if (inside) return inside;
+            }
+            return false;
         }
  
     private:

@@ -87,7 +87,7 @@ void planControl(std::string planner_string)
     // solve the instance
     bool solved = ss->solve(10.0);
     if (solved)
-        write2sys(ss, w->getAgents());
+        write2sys(ss, "OK");
 }
 
 int main(int argc, char ** argv)

@@ -3,6 +3,45 @@ from matplotlib.patches import Polygon
 import math
 import csv
 
+def plot_RRT(ax, fileName):
+    nodes = {}
+    with open('solutions/' + fileName + '_nodes.csv', 'r') as csvfile: 
+        reader = csv.reader(csvfile)
+        for row in reader:
+            node_id = int(row[0])
+            x, y = float(row[1]), float(row[2])
+            nodes[node_id] = (x, y)
+
+    # Read connections from the CSV file
+    connections = []
+    with open('solutions/' + fileName + '_connections.csv', 'r') as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            node1, node2 = int(row[0]), int(row[1])
+            connections.append((node1, node2))
+
+    frontier_nodes = []
+    with open('solutions/frontier_nodes.csv', 'r') as csvfile:  
+        reader = csv.reader(csvfile)
+        for row in reader:
+            x, y = float(row[0]), float(row[1])
+            frontier_nodes.append((x, y))
+
+    for node1, node2 in connections:
+        x1, y1 = nodes[node1]
+        x2, y2 = nodes[node2]
+        ax.plot([x1, x2], [y1, y2], color="goldenrod", zorder=0)  # Plot connections as lines
+
+    for node_id, (x, y) in nodes.items():
+        ax.scatter(x, y, color="darkgoldenrod", s=10)
+
+    for node in frontier_nodes:
+        ax.scatter(node[0], node[1], color="teal", s=10)
+
+
+def plot_obstacles():
+    pass
+
 if __name__ == '__main__':
     limits = [(-1, -1), (-1, 15), (15, 15), (15, -1)]
     workspace1 = [
@@ -41,12 +80,13 @@ if __name__ == '__main__':
     patch = Polygon(limits, facecolor="darkgrey", zorder=0, alpha=0.75)
     ax.add_patch(patch)
     ugv_data = []
-    with open('solutions/Car_plan.txt', 'r') as file:
+    with open('solutions/UGV7_plan.txt', 'r') as file:
         for line in file:
             row = [float(val) for val in line.split()]
             ugv_data.append(row)
+    
     uav_data = []
-    with open('solutions/UAV_plan.txt', 'r') as file:
+    with open('solutions/UAV4_plan.txt', 'r') as file:
         for line in file:
             row = [float(val) for val in line.split()]
             uav_data.append(row)
@@ -78,7 +118,7 @@ if __name__ == '__main__':
 
     half_w = 0.5 / 2
     half_l = 0.5 / 2
-    scope = 5 / 2
+    scope = 4.2 / 2
     x_pts = []
     y_pts = []
     for state in uav_data:
@@ -110,11 +150,12 @@ if __name__ == '__main__':
             (state[0] + scope ,
             state[1] - scope)
         ]
-        patch = Polygon(vertices, facecolor="white", zorder=0)
+        patch = Polygon(vertices, facecolor="oldlace", zorder=0)
         ax.add_patch(patch)
     
     for obstacle in obstacles:
         patch = Polygon(obstacle, facecolor="indianred", edgecolor="black", lw=1, zorder=0)
         ax.add_patch(patch)
-
+    plot_RRT(ax, 'start')
+    plot_RRT(ax, 'goal')
     plt.show()

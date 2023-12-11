@@ -88,12 +88,12 @@ void planCarControl(std::string planner_string)
     // solve the instance
     bool solved = ss->solve(20.0);
     if (solved)
-        write2sys(ss, w->getAgents());
+        write2sys(ss, "UGV");
 }
 
 oc::SimpleSetupPtr controlUAVSimpleSetUp(const World *w) {
     // grab the agent -- assume only one
-    Agent *a = w->getAgents()[0];
+    Agent *a = w->getAgents()[1];
     // create state and control spaces
     ob::StateSpacePtr space = createBounded2ndOrderUAVStateSpace(w->getWorldDimensions());
     oc::ControlSpacePtr cspace = createUniform2DUAVControlSpace(space);
@@ -155,15 +155,88 @@ void planUAVControl(std::string planner_string) {
     // solve the instance
     bool solved = ss->solve(30.0);
     if (solved) {
-        write2sys(ss, w->getAgents());
+        write2sys(ss, "UAV");
         postFlightFrontier(ss->getSolutionPath(), w);
     }
 }
 
-int main(int argc, char ** argv)
-{
+bool setupAndSolveUAV(World *w, int run) {
+    oc::SimpleSetupPtr ss = controlUAVSimpleSetUp(w);
+    std::string plannerName = "RRT";
+
+    // set planner
+    ob::PlannerPtr planner = nullptr;
+    if (plannerName == "RRT") planner = std::make_shared<oc::RRT>(ss->getSpaceInformation());
+    else  planner = std::make_shared<oc::SST>(ss->getSpaceInformation());
+    ss->setPlanner(planner);
+    ss->setup();
+    w->printWorld();
+    std::cout << "UAV Setup Complete. Press ENTER to plan: ";
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    // solve the instance
+    bool solved = ss->solve(10.0);
+    if (solved) {
+        write2sys(ss, "UAV" + std::to_string(run));
+        postFlightFrontier(ss->getSolutionPath(), w);
+        w->showGrid();
+    }
+    return solved;
+}
+
+bool setupAndSolveUGV(World *w, int run) {
+    oc::SimpleSetupPtr ss = controlSimpleSetUp(w);
+    std::string plannerName = "RRT";
+
+    // set planner
+    ob::PlannerPtr planner = nullptr;
+    if (plannerName == "RRT") planner = std::make_shared<oc::RRT>(ss->getSpaceInformation());
+    else  planner = std::make_shared<oc::SST>(ss->getSpaceInformation());
+    ss->setPlanner(planner);
+    ss->setup();
+    w->printWorld();
+    std::cout << "UGV Setup Complete. Press ENTER to plan: ";
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    // solve the instance
+    bool solved = ss->solve(10.0);
+    if (solved) write2sys(ss, "UGV" + std::to_string(run));
+    return ss->haveExactSolutionPath();
+}
+
+void coopPlan() {
+    //create world from YAML file
+    World *w = yaml2world("ProblemCoop.yml");
+    // create simple setup object
+    bool foundUGVPath = false;
+    int run = 0;
+    while (true) {
+        setupAndSolveUAV(w, run);
+        foundUGVPath = setupAndSolveUGV(w, run);
+        if (foundUGVPath) break;
+        OMPL_INFORM("No UGV plan found, replanning UAV... ");
+        auto UAVagent = w->getAgents()[1];
+        std::pair<std::vector<double>, std::vector<double>> bestPoints = findBestFrontierPoints(w, UAVagent);
+        std::vector<double> UAVgoal = UAVagent->getGoalLocation();
+        UAVagent->setStartLocation(UAVgoal);
+        if (distanceXY(UAVgoal, bestPoints.first) < distanceXY(UAVgoal, bestPoints.second)) {
+            UAVagent->setGoalLocation(bestPoints.first);
+            setupAndSolveUAV(w, run);
+            UAVagent->setStartLocation(bestPoints.first);
+            UAVagent->setGoalLocation(bestPoints.second);
+        } else {
+            UAVagent->setGoalLocation(bestPoints.second);
+            setupAndSolveUAV(w, run);
+            UAVagent->setStartLocation(bestPoints.second);
+            UAVagent->setGoalLocation(bestPoints.first);
+        }
+        run++;
+    }
+}
+
+
+int main(int argc, char ** argv) {
     std::string plannerName = "RRT";
     OMPL_INFORM("Planning for OMPL Lecture Example using Control Planning with %s", plannerName.c_str());
+    // planUAVControl(plannerName);
     // planCarControl(plannerName);
-    planUAVControl(plannerName);
+    coopPlan();
 }
