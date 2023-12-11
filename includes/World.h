@@ -66,6 +66,16 @@ struct Obstacle {
     }
 };
 
+enum CellState {
+    KNOWN,
+    UNKNOWN
+};
+
+struct GridCell {
+    CellState state;
+    // Other information if needed, e.g., cost, probability, etc.
+};
+
 // An agent has a name, shape, dynamics, start and goal regions
 // Created as class to keep important variables safe
 class Agent {
@@ -95,11 +105,14 @@ class Agent {
 // world class holds all relevent data in the world that is used by OMPL
 class World {
     public:
-        World(){}
+        World() : occupancyGrid(100, std::vector<GridCell>(100, {UNKNOWN})){ 
+            rows = occupancyGrid.size(); // Number of rows
+            cols = (rows > 0) ? occupancyGrid[0].size() : 0; // Number of columns
+        }
         // methods for dimensions
-        void setWorldDimensions(int x, int y){xDim_ = x; yDim_ = y;};
-        std::vector<double> getWorldDimensions() const {return {xDim_, yDim_};};
-        void printWorldDimensions(){OMPL_INFORM("Space Dimensions: [%0.2f, %0.2f]", xDim_, yDim_);}
+        void setWorldDimensions(const std::vector<double>& dim) {dimensions = dim;};
+        std::vector<double> getWorldDimensions() const {return dimensions;};
+        void printWorldDimensions(){OMPL_INFORM("Space Dimensions: [%0.2f, %0.2f, %0.2f, %0.2f]", dimensions[0], dimensions[1], dimensions[2], dimensions[3] );}
         // methods for obstacles
         void addObstacle(Obstacle obs){Obstacles_.push_back(obs);};
         std::vector<Obstacle> getObstacles() const {return Obstacles_;};
@@ -123,15 +136,42 @@ class World {
             }
         }
         void printWorld() {
-            OMPL_INFORM("Map Dimensions: [%0.2f, %0.2f]", getWorldDimensions()[0], getWorldDimensions()[1]);
+            printWorldDimensions();
             printObstacles();
             printAgents();
         }
+
+        std::pair<std::size_t, std::size_t> getGridSize() const {return {rows, cols};};
+
+
+        std::pair<std::size_t, std::size_t> getCellFromPoint(double x0, double x1) const {
+
+            double cellWidth0 = (dimensions[1] - dimensions[0])/rows;
+            double cellWidth1 = (dimensions[3] - dimensions[2])/cols;
+            int i = std::floor((x0 - dimensions[0]) / cellWidth0);
+            int j = std::floor((x1 - dimensions[2]) / cellWidth1);
+            return std::pair<std::size_t, std::size_t>(i, j);
+        };
+
+        void updateFrontier(const std::pair<std::size_t, std::size_t>& centerCell) {
+            int squareSize = 10;
+            for (int i = centerCell.first - squareSize / 2; i <= centerCell.first + squareSize / 2; ++i) {
+                for (int j = centerCell.second - squareSize / 2; j <= centerCell.second + squareSize / 2; ++j) {
+                    // Check if the cell (i, j) is within the bounds of the grid
+                    if (i >= 0 && i < rows && j >= 0 && j < cols) {
+                        occupancyGrid[i][j].state = KNOWN;
+                    }
+                }
+            }
+        }
+
     private:
-        double xDim_{0};
-        double yDim_{0};
+        std::vector<double> dimensions;
         std::vector<Obstacle> Obstacles_;
         std::vector<Agent*> Agents_;
+        std::vector<std::vector<GridCell>> occupancyGrid;
+        std::size_t rows;
+        std::size_t cols; 
 };
 
 // function that parses YAML file to world object
@@ -151,9 +191,11 @@ World* yaml2world(std::string file) {
     try {    
         // grab dimensions from problem definition
         const auto& dims = config["Map"]["Dimensions"];
-        const int dimx = dims[0].as<double>();
-        const int dimy = dims[1].as<double>();
-        w->setWorldDimensions(dimx, dimy);
+        const double x_min = dims[0].as<double>();
+        const double x_max = dims[1].as<double>();
+        const double y_min = dims[2].as<double>();
+        const double y_max = dims[3].as<double>();
+        w->setWorldDimensions({x_min, x_max, y_min, y_max});
         
         // set Obstacles
         const auto& obs = config["Map"]["Obstacles"];

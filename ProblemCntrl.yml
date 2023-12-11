@@ -1,6 +1,8 @@
 Map:
   Dimensions:
+  - -1
   - 15
+  - -1
   - 15
   Obstacles:
     obstacle0:

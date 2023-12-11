@@ -40,7 +40,7 @@
 
 namespace ob = ompl::base;
 
-ob::StateSpacePtr createBounded2ndOrderCarStateSpace(const unsigned int x_max, const unsigned int y_max) {
+ob::StateSpacePtr createBounded2ndOrderCarStateSpace(const std::vector<double>& dimensions) {
     ob::StateSpacePtr space = std::make_shared<ob::CompoundStateSpace>();
     space->as<ob::CompoundStateSpace>()->addSubspace(ob::StateSpacePtr(new ob::RealVectorStateSpace(4)), 1.0);
     space->as<ob::CompoundStateSpace>()->addSubspace(ob::StateSpacePtr(new ob::SO2StateSpace()), 1.0);
@@ -48,30 +48,30 @@ ob::StateSpacePtr createBounded2ndOrderCarStateSpace(const unsigned int x_max, c
     
     // set the bounds for the RealVectorStateSpace 
     ob::RealVectorBounds bounds(4);
-    bounds.setLow(0, -1.0); //  x lower bound
-    bounds.setHigh(0, x_max); // x upper bound
-    bounds.setLow(1, -1.0);  // y lower bound
-    bounds.setHigh(1, y_max); // y upper bound
-    bounds.setLow(2, -1/6);  // v lower bound
-    bounds.setHigh(2, 1/2); // v upper bound
-    bounds.setLow(3, -M_PI / 6);  // phi lower bound
-    bounds.setHigh(3, M_PI / 6); // phi upper bound
+    bounds.setLow(0, dimensions[0]); //  x lower bound
+    bounds.setHigh(0, dimensions[1]); // x upper bound
+    bounds.setLow(1, dimensions[2]);  // y lower bound
+    bounds.setHigh(1, dimensions[3]); // y upper bound
+    bounds.setLow(2, -1);  // v lower bound
+    bounds.setHigh(2, 1); // v upper bound
+    bounds.setLow(3, -M_PI / 3);  // phi lower bound
+    bounds.setHigh(3, M_PI / 3); // phi upper bound
     space->as<ob::CompoundStateSpace>()->as<ob::RealVectorStateSpace>(0)->setBounds(bounds);
 
     return space;
 }
 
-ob::StateSpacePtr createBounded2ndOrderUAVStateSpace(const unsigned int x_max, const unsigned int y_max) {
+ob::StateSpacePtr createBounded2ndOrderUAVStateSpace(const std::vector<double> dimensions) {
     ob::StateSpacePtr space = std::make_shared<ob::RealVectorStateSpace>(8);
     
-    double maxSpeed = 5.0;
+    double maxSpeed = 3.0;
     double maxAngle = 0.2;
     // set the bounds for the RealVectorStateSpace 
     ob::RealVectorBounds bounds(8);
-    bounds.setLow(0, -1.0); //  x lower bound
-    bounds.setHigh(0, x_max); // x upper bound
-    bounds.setLow(1, -1.0);  // y lower bound
-    bounds.setHigh(1, y_max); // y upper bound
+    bounds.setLow(0, dimensions[0]); //  x lower bound
+    bounds.setHigh(0, dimensions[1]); // x upper bound
+    bounds.setLow(1, dimensions[2]);  // y lower bound
+    bounds.setHigh(1, dimensions[3]); // y upper bound
     bounds.setLow(2, -maxSpeed);        // x_dot lower bound (example value)
     bounds.setHigh(2, maxSpeed);        // x_dot upper bound (example value)
     bounds.setLow(3, -maxSpeed);        // y_dot lower bound (example value)

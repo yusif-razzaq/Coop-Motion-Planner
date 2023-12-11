@@ -58,7 +58,6 @@ public:
             return false;
         if (a_->getDynamics() == "UAV") 
             return true;
-        std::cout << "NOT UAV???\n";
         // Get xy state and theta state (in rad [0, 2*pi]) from state object
         auto compState = state->as<ob::CompoundStateSpace::StateType>();
         auto xyState = compState->as<ob::RealVectorStateSpace::StateType>(0);

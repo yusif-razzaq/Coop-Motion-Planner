@@ -11,6 +11,7 @@
 #include "StatePropagatorDatabase.h"
 #include "GoalRegionDatabase.h"
 #include "PostProcessing.h"
+#include "FrontierPlanner.h"
 
 namespace fs = std::filesystem;
 namespace ob = ompl::base;
@@ -23,7 +24,7 @@ oc::SimpleSetupPtr controlSimpleSetUp(const World *w)
     Agent *a = w->getAgents()[0];
 
     // create state and control spaces
-    ob::StateSpacePtr space = createBounded2ndOrderCarStateSpace(w->getWorldDimensions()[0], w->getWorldDimensions()[1]);
+    ob::StateSpacePtr space = createBounded2ndOrderCarStateSpace(w->getWorldDimensions());
     oc::ControlSpacePtr cspace = createUniform2DRealVectorControlSpace(space);
 
     // define a simple setup class
@@ -75,8 +76,8 @@ void planCarControl(std::string planner_string)
         planner = std::make_shared<oc::RRT>(ss->getSpaceInformation());
     }
     ss->setPlanner(planner);
-    ss->getSpaceInformation()->setPropagationStepSize(0.1);
-    ss->getSpaceInformation()->setMinMaxControlDuration(10, 20);
+    // ss->getSpaceInformation()->setPropagationStepSize(0.1);
+    // ss->getSpaceInformation()->setMinMaxControlDuration(10, 20);
     // run automated setup routine
     ss->setup();
 
@@ -85,7 +86,7 @@ void planCarControl(std::string planner_string)
     // std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     
     // solve the instance
-    bool solved = ss->solve(60.0);
+    bool solved = ss->solve(20.0);
     if (solved)
         write2sys(ss, w->getAgents());
 }
@@ -94,7 +95,7 @@ oc::SimpleSetupPtr controlUAVSimpleSetUp(const World *w) {
     // grab the agent -- assume only one
     Agent *a = w->getAgents()[0];
     // create state and control spaces
-    ob::StateSpacePtr space = createBounded2ndOrderUAVStateSpace(w->getWorldDimensions()[0], w->getWorldDimensions()[1]);
+    ob::StateSpacePtr space = createBounded2ndOrderUAVStateSpace(w->getWorldDimensions());
     oc::ControlSpacePtr cspace = createUniform2DUAVControlSpace(space);
 
     // define a simple setup class
@@ -153,14 +154,16 @@ void planUAVControl(std::string planner_string) {
 
     // solve the instance
     bool solved = ss->solve(30.0);
-    if (solved)
+    if (solved) {
         write2sys(ss, w->getAgents());
+        postFlightFrontier(ss->getSolutionPath(), w);
+    }
 }
 
 int main(int argc, char ** argv)
 {
     std::string plannerName = "RRT";
     OMPL_INFORM("Planning for OMPL Lecture Example using Control Planning with %s", plannerName.c_str());
-    // planCarControl(plannerName);
+    planCarControl(plannerName);
     planUAVControl(plannerName);
 }

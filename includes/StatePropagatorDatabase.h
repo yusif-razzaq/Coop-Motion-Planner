@@ -101,5 +101,4 @@ void SecondOrderCarODEPostIntegration (const ob::State* /*state*/, const oc::Con
 
 void SecondOrderUAVODEPostIntegration (const ob::State* /*state*/, const oc::Control* /*control*/, const double /*duration*/, ob::State *result) {
     // wrap the angle
-    // std::cout << result[0];
 }
