@@ -46,9 +46,11 @@ class MyRRT2D {
         void setLimits(const std::vector<std::pair<double, double>>& lims) {limits = lims;};
         void writeNodesToCSV(const std::string& filename);
         void writeParentsToCSV(const std::string& filename);
+        void writeFrontierToCSV(const std::string& filename);
         void writeToCSV(const std::string& filename) {
             writeNodesToCSV("solutions/" + filename + "_nodes.csv");
             writeParentsToCSV("solutions/" + filename + "_connections.csv");
+            writeFrontierToCSV(filename);
         };
     private:
         int n;
@@ -177,6 +179,31 @@ void MyRRT2D::writeParentsToCSV(const std::string& filename) {
     file.close();
 }
 
+void MyRRT2D::writeFrontierToCSV(const std::string& filename) {
+    std::string fileString = "solutions/frontier_nodes.csv";
+    if (filename == "start") {
+        std::ofstream file(fileString);
+        for (const auto& point: frontierPoints) {
+            for (size_t i = 0; i < point.size(); ++i) {
+                file << point[i];
+                if (i != point.size() - 1) file << ",";
+            }
+        file << std::endl;
+        }
+        file.close();
+    } else {
+        std::ofstream file(fileString, std::ios::app);
+        for (const auto& point: frontierPoints) {
+            for (size_t i = 0; i < point.size(); ++i) {
+                file << point[i];
+                if (i != point.size() - 1) file << ",";
+            }
+        file << std::endl;
+        }
+        file.close();
+    }
+}
+
 std::pair<std::vector<double>, std::vector<double>> findBestFrontierPoints(World *w, const Agent *a) { 
     auto limits = w->getWorldDimensions();
     MyRRT2D startRRT(100, 0.25, false, w);
@@ -188,4 +215,26 @@ std::pair<std::vector<double>, std::vector<double>> findBestFrontierPoints(World
     goalRRT.plan(a->getGoalLocation(), a->getStartLocation());
     goalRRT.writeToCSV("goal");
     return closestPointsPair(startRRT.getFrontierPoints(), goalRRT.getFrontierPoints());
+}
+
+void clearFiles() {
+    fs::path filePath = fs::current_path() / fs::path("solutions/UAV_plan.txt"); 
+    std::ofstream file(filePath, std::ios::trunc);
+    file.close();
+    fs::path filePath2 = fs::current_path() / fs::path("solutions/UGV_plan.txt"); 
+    std::ofstream file2(filePath2, std::ios::trunc); 
+    file2.close();
+}
+
+
+void deleteFilesInFolder(const std::string& folderPath) {
+    try {
+        for (const auto& entry : fs::directory_iterator(folderPath)) {
+            if (entry.is_regular_file()) {
+                fs::remove(entry.path());
+            }
+        }
+    } catch (const fs::filesystem_error& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
 }

@@ -176,9 +176,9 @@ bool setupAndSolveUAV(World *w, int run) {
     // solve the instance
     bool solved = ss->solve(10.0);
     if (solved) {
-        write2sys(ss, "UAV" + std::to_string(run));
+        write2sys(ss, "UAV");
         postFlightFrontier(ss->getSolutionPath(), w);
-        w->showGrid();
+        // w->showGrid();
     }
     return solved;
 }
@@ -198,13 +198,14 @@ bool setupAndSolveUGV(World *w, int run) {
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     // solve the instance
     bool solved = ss->solve(10.0);
-    if (solved) write2sys(ss, "UGV" + std::to_string(run));
+    if (ss->haveExactSolutionPath()) write2sys(ss, "UGV");
     return ss->haveExactSolutionPath();
 }
 
 void coopPlan() {
     //create world from YAML file
     World *w = yaml2world("ProblemCoop.yml");
+    deleteFilesInFolder("solutions");
     // create simple setup object
     bool foundUGVPath = false;
     int run = 0;

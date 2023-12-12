@@ -159,12 +159,13 @@ class World {
             if (startX < 0) startX = 0;
             int startY = centerCell.second - squareSize / 2;
             if (startY < 0) startY = 0;
-            for (int i = startX; i <= centerCell.first + squareSize / 2; ++i) {
-                for (int j = startY; j <= centerCell.second + squareSize / 2; ++j) {
-                    // Check if the cell (i, j) is within the bounds of the grid
-                    if (i >= 0 && i < rows && j >= 0 && j < cols) {
-                        occupancyGrid[i][j].state = KNOWN;
-                    }
+            int endX = centerCell.first + squareSize / 2;
+            if (endX >= rows) endX = rows - 1;
+            int endY = centerCell.second + squareSize / 2;
+            if (endY >= cols) endY = cols - 1;
+            for (int i = startX; i <= endX; ++i) {
+                for (int j = startY; j <= endY; ++j) {
+                    occupancyGrid[i][j].state = KNOWN;
                 }
             }
         }
@@ -180,7 +181,6 @@ class World {
 
         void showGrid() {
             cv::Mat occupancyMap(rows, cols, CV_8UC3);
-
             // Set colors for different cell states
             cv::Scalar colorKnown(108, 108, 0);       // White for free cells
             cv::Scalar colorUnknown(63, 63, 171);   // Gray for unknown cells
@@ -190,9 +190,9 @@ class World {
             for (int i = 0; i < occupancyMap.rows; ++i) {
                 for (int j = 0; j < occupancyMap.cols; ++j) {
                     if (occupancyGrid[i][j].state == KNOWN) {
-                        occupancyMap.at<cv::Vec3b>(i, j) = colorKnownVec;
+                        occupancyMap.at<cv::Vec3b>(j, i) = colorKnownVec;
                     } else {
-                        occupancyMap.at<cv::Vec3b>(i, j) = colorUnknownVec;
+                        occupancyMap.at<cv::Vec3b>(j, i) = colorUnknownVec;
                     }
                 }
             }      

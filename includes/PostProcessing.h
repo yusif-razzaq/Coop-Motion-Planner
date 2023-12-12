@@ -82,11 +82,12 @@ void write2sys(const oc::SimpleSetupPtr problem, const std::string agent)
     fs::path sol_dir = "solutions/";
     std::string fileName = agent + "_plan.txt";
 
-    auto filePath = fs::current_path() / sol_dir / fs::path(fileName); 
-    std::ofstream file(filePath);
+    fs::path filePath = fs::current_path() / sol_dir / fs::path(fileName); 
+    std::ofstream file(filePath, std::ios::app);
     const oc::PathControl p = problem->getSolutionPath();
     p.asGeometric().printAsMatrix(file);
-    p.printAsMatrix(std::cout);
+    file.close();
+    // p.printAsMatrix(std::cout);
     std::cout << p.getStateCount() << " < Control State Count\n";
     // std::cout << p.interpolate().getStateCount() << " < State Count\n";
     std::cout << p.asGeometric().getStateCount() << " < Geometric State Count\n";

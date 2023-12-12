@@ -59,7 +59,7 @@ class GoalRegion2ndOrderUAV: public ob::GoalRegion
 {
 public:
     GoalRegion2ndOrderUAV(const ob::SpaceInformationPtr &si, double gx, double gy): 
-        ob::GoalRegion(si), gx_(gx), gy_(gy) { threshold_ = 0.5; }
+        ob::GoalRegion(si), gx_(gx), gy_(gy) { threshold_ = 0.25; }
     
     double distanceGoal(const ob::State *st) const override {
         const double *robot_pos = st->as<ob::RealVectorStateSpace::StateType>()->values;
