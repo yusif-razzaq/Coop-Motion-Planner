@@ -154,7 +154,7 @@ class World {
         };
 
         void updateFrontier(const std::pair<std::size_t, std::size_t>& centerCell) {
-            int squareSize = 20; // 5 m
+            int squareSize = 15; // 5 m
             int startX = centerCell.first - squareSize / 2;
             if (startX < 0) startX = 0;
             int startY = centerCell.second - squareSize / 2;

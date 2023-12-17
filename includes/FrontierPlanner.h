@@ -206,11 +206,11 @@ void MyRRT2D::writeFrontierToCSV(const std::string& filename) {
 
 std::pair<std::vector<double>, std::vector<double>> findBestFrontierPoints(World *w, const Agent *a) { 
     auto limits = w->getWorldDimensions();
-    MyRRT2D startRRT(100, 0.25, false, w);
+    MyRRT2D startRRT(100, 0.05, false, w);
     startRRT.setLimits({{limits[0], limits[1]}, {limits[2], limits[3]}});
     startRRT.plan(a->getStartLocation(), a->getGoalLocation());
     startRRT.writeToCSV("start");
-    MyRRT2D goalRRT(100, 0.25, false, w);
+    MyRRT2D goalRRT(100, 0.05, false, w);
     goalRRT.setLimits({{limits[0], limits[1]}, {limits[2], limits[3]}});
     goalRRT.plan(a->getGoalLocation(), a->getStartLocation());
     goalRRT.writeToCSV("goal");

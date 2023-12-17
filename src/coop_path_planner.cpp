@@ -170,7 +170,7 @@ bool setupAndSolveUAV(World *w, int run) {
     else  planner = std::make_shared<oc::SST>(ss->getSpaceInformation());
     ss->setPlanner(planner);
     ss->setup();
-    w->printWorld();
+    // w->printWorld();
     std::cout << "UAV Setup Complete. Press ENTER to plan: ";
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     // solve the instance
@@ -193,9 +193,9 @@ bool setupAndSolveUGV(World *w, int run) {
     else  planner = std::make_shared<oc::SST>(ss->getSpaceInformation());
     ss->setPlanner(planner);
     ss->setup();
-    w->printWorld();
-    std::cout << "UGV Setup Complete. Press ENTER to plan: ";
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    // w->printWorld();
+    // std::cout << "UGV Setup Complete. Press ENTER to plan: ";
+    // std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     // solve the instance
     bool solved = ss->solve(10.0);
     if (ss->haveExactSolutionPath()) write2sys(ss, "UGV");

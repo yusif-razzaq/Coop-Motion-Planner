@@ -5,6 +5,8 @@ import numpy as np
 import csv
 import os
 
+RRT = False
+
 def plot_RRT(ax, fileName):
     nodes = {}
     if os.path.exists('solutions/' + fileName + '_nodes.csv'):
@@ -114,7 +116,7 @@ def plot_UAV(ax):
     x_pts = []
     y_pts = []
     for state in uav_data:
-        draw_uav_icon(ax, state[0], state[1])
+        # if not RRT: draw_uav_icon(ax, state[0], state[1])
         vertices = [
             (state[0] + scope,
             state[1] + scope),
@@ -181,7 +183,8 @@ if __name__ == '__main__':
     plot_UAV(ax)
 
     plot_obstacles()
-    # plot_RRT(ax, 'start')
-    # plot_RRT(ax, 'goal')
+    if RRT:
+        plot_RRT(ax, 'start')
+        plot_RRT(ax, 'goal')
     plt.show()
 
